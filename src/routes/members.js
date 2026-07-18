@@ -51,8 +51,8 @@ router.post('/login', async (req, res) => {
   const token = signSession(member);
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production' && process.env.FORCE_HTTPS === 'true',
+    sameSite: 'none',
     domain: process.env.COOKIE_DOMAIN || undefined, // e.g. ".theorder.com" for cross-subdomain SSO
     maxAge: 30 * 24 * 60 * 60 * 1000
   });
