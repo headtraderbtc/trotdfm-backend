@@ -59,3 +59,22 @@ module.exports = {
   attachMember, requireMember, requireAdmin,
   SESSION_COOKIE
 };
+export function attachMember(req, res, next) {
+  // check Authorization header first (cross-domain localStorage approach)
+  const authHeader = req.headers.authorization || '';
+  if (authHeader.startsWith('Bearer ')) {
+    const token = authHeader.slice(7);
+    const payload = verifySession(token);
+    if (payload) {
+      req.member = payload;
+      return next();
+    }
+  }
+  // fall back to cookie
+  const cookieToken = req.cookies && req.cookies[SESSION_COOKIE];
+  if (cookieToken) {
+    const payload = verifySession(cookieToken);
+    if (payload) req.member = payload;
+  }
+  next();
+}
