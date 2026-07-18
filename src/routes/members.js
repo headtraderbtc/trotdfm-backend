@@ -49,14 +49,20 @@ router.post('/login', async (req, res) => {
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
   const token = signSession(member);
+
+  // still set cookie for same-domain setups
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production' && process.env.FORCE_HTTPS === 'true',
-    sameSite: 'none',
-    domain: process.env.COOKIE_DOMAIN || undefined, // e.g. ".theorder.com" for cross-subdomain SSO
+    secure: false,
+    sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000
   });
-  res.json({ member: { id: member.id, name: member.name, email: member.email, role: member.role } });
+
+  // ALSO return token in body for cross-domain localStorage approach
+  res.json({ 
+    token,
+    member: { id: member.id, name: member.name, email: member.email, role: member.role } 
+  });
 });
 
 /* ---- POST /api/members/logout ---- */
